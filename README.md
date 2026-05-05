@@ -1,6 +1,7 @@
 # contentValidity
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/Rafhq1403/contentValidity/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Rafhq1403/contentValidity/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `contentValidity` is an R package for computing content validity indices

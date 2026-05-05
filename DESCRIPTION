@@ -1,7 +1,7 @@
 Package: contentValidity
 Type: Package
 Title: Content Validity Indices for Instrument Development
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R:
     person("Rashed", "Alqahtani",
            email = "rashed.alqahtani@gmail.com",
