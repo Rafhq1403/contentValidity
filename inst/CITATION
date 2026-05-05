@@ -1,16 +1,19 @@
 citHeader("To cite the contentValidity package in publications, please use:")
 
+year <- format(Sys.Date(), "%Y")
+note <- sprintf("R package version %s", meta$Version)
+
 bibentry(
   bibtype = "Manual",
   title   = "{contentValidity}: Content Validity Indices for Instrument Development",
   author  = person("Rashed", "Alqahtani"),
-  year    = format(Sys.Date(), "%Y"),
-  note    = sprintf("R package version %s", utils::packageVersion("contentValidity")),
+  year    = year,
+  note    = note,
   url     = "https://github.com/Rafhq1403/contentValidity",
   textVersion = paste0(
-    "Alqahtani, R. (", format(Sys.Date(), "%Y"),
+    "Alqahtani, R. (", year,
     "). contentValidity: Content Validity Indices for Instrument Development. ",
-    "R package version ", utils::packageVersion("contentValidity"), ". ",
+    note, ". ",
     "https://github.com/Rafhq1403/contentValidity"
   )
 )
