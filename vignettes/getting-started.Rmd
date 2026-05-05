@@ -1,0 +1,199 @@
+---
+title: "Getting Started with contentValidity"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with contentValidity}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(contentValidity)
+```
+
+## Background
+
+When developing a new questionnaire, scale, or test, researchers typically
+ask a panel of subject-matter experts to rate each candidate item for
+relevance to the construct being measured. The expert ratings are then
+summarized into **content validity indices** that quantify how well the
+items represent the intended construct.
+
+The `contentValidity` package implements the standard set of content
+validity indices used in nursing, education, psychology, and health
+sciences research:
+
+- **I-CVI** — Item-level Content Validity Index (Lynn, 1986)
+- **S-CVI/Ave** — Scale-level CVI, average method (Polit & Beck, 2006)
+- **S-CVI/UA** — Scale-level CVI, universal agreement (Polit & Beck, 2006)
+- **Modified κ\*** — I-CVI adjusted for chance agreement
+  (Polit, Beck, & Owen, 2007)
+- **Aiken's V** — uses the full rating scale (Aiken, 1985)
+- **Lawshe's CVR** — Content Validity Ratio for "essential" judgments
+  (Lawshe, 1975), with corrected critical values from Wilson, Pan, and
+  Schumsky (2012)
+
+## The example dataset
+
+The package ships with `cvi_example`, a simulated set of expert ratings for
+a 10-item depression screening instrument, with 6 expert raters using a
+4-point relevance scale (1 = not relevant, 4 = highly relevant).
+
+```{r}
+data(cvi_example)
+head(cvi_example)
+```
+
+## Item-level analysis
+
+The simplest place to start is `icvi()`, which gives the proportion of
+experts rating each item as 3 or 4:
+
+```{r}
+icvi(cvi_example)
+```
+
+By Polit and Beck (2006), I-CVI ≥ 0.78 is considered excellent with six or
+more experts. Items 5 and 9 in our example (0.67 and 0.50) would be flagged
+for revision.
+
+Plain I-CVI doesn't correct for chance agreement. With small panels, a
+high I-CVI can be partly luck. **Modified kappa** addresses this:
+
+```{r}
+mod_kappa(cvi_example)
+```
+
+Notice that item 9 drops sharply (0.50 → 0.27) — its I-CVI was inflated
+by chance agreement among only six raters.
+
+**Aiken's V** uses the full rating scale rather than dichotomizing
+relevant/not-relevant. A "4" contributes more than a "3":
+
+```{r}
+aiken_v(cvi_example, lo = 1, hi = 4)
+```
+
+## Scale-level analysis
+
+Two scale-level indices summarize content validity across all items:
+
+```{r}
+scvi_ave(cvi_example)   # average of I-CVIs
+scvi_ua(cvi_example)    # proportion of items with universal agreement
+```
+
+Polit and Beck (2006) recommend reporting both. S-CVI/Ave ≥ 0.90 indicates
+excellent overall content validity; S-CVI/UA gives a stricter view of how
+many items achieved unanimous endorsement.
+
+## All indices at once
+
+`content_validity()` is the workhorse function for routine analysis. It
+returns the complete set of item-level and scale-level indices in one
+tidy structure:
+
+```{r}
+result <- content_validity(cvi_example)
+result
+```
+
+The result is an object you can subset, just like a list:
+
+```{r}
+result$items
+result$scale
+```
+
+## Publication-ready tables
+
+`apa_table()` formats the result for journal manuscripts:
+
+```{r}
+apa_table(result)
+```
+
+For R Markdown output (HTML, PDF, Word), use the appropriate format
+argument. The function returns a `knitr::kable()` object that renders
+correctly in your document:
+
+```{r, results = "asis"}
+apa_table(result, format = "markdown")
+```
+
+## Lawshe's CVR
+
+CVR uses a different rating convention: each expert classifies items as
+**essential**, **useful but not essential**, or **not necessary**. Use
+Lawshe-style coding (1 = essential, 2 = useful, 3 = not necessary) and
+call `cvr()` directly:
+
+```{r}
+# 10 experts rating 3 items on Lawshe's scale
+lawshe_ratings <- matrix(
+  c(1, 1, 1, 1, 1, 1, 1, 1, 2, 2,    # 8 of 10 essential
+    1, 1, 1, 2, 2, 2, 2, 3, 3, 3,    # 3 of 10 essential
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1),   # 10 of 10 essential
+  nrow = 10,
+  dimnames = list(NULL, paste0("item", 1:3))
+)
+
+cvr(lawshe_ratings)
+```
+
+Compare each item's CVR to the critical value for the panel size, using
+the corrected Wilson, Pan, and Schumsky (2012) thresholds:
+
+```{r}
+cvr_critical(n_experts = 10)        # one-tailed alpha = 0.05
+cvr_critical(n_experts = 10, alpha = 0.01)
+```
+
+In this example, only items 1 and 3 (CVR = 0.6 and 1.0) reach the
+critical value of 0.8 at α = 0.05. Item 2 would be revised or dropped.
+
+## Citing the package
+
+If you use `contentValidity` in published research, please run:
+
+```{r, eval = FALSE}
+citation("contentValidity")
+```
+
+to get a current citation block in BibTeX or plain-text form.
+
+## References
+
+Aiken, L. R. (1985). Three coefficients for analyzing the reliability and
+validity of ratings. *Educational and Psychological Measurement*, 45(1),
+131–142. <https://doi.org/10.1177/0013164485451012>
+
+Lawshe, C. H. (1975). A quantitative approach to content validity.
+*Personnel Psychology*, 28(4), 563–575.
+<https://doi.org/10.1111/j.1744-6570.1975.tb01393.x>
+
+Lynn, M. R. (1986). Determination and quantification of content validity.
+*Nursing Research*, 35(6), 382–385.
+<https://doi.org/10.1097/00006199-198611000-00017>
+
+Polit, D. F., & Beck, C. T. (2006). The content validity index: Are you
+sure you know what's being reported? Critique and recommendations.
+*Research in Nursing & Health*, 29(5), 489–497.
+<https://doi.org/10.1002/nur.20147>
+
+Polit, D. F., Beck, C. T., & Owen, S. V. (2007). Is the CVI an acceptable
+indicator of content validity? Appraisal and recommendations.
+*Research in Nursing & Health*, 30(4), 459–467.
+<https://doi.org/10.1002/nur.20199>
+
+Wilson, F. R., Pan, W., & Schumsky, D. A. (2012). Recalculation of the
+critical values for Lawshe's content validity ratio.
+*Measurement and Evaluation in Counseling and Development*, 45(3),
+197–210. <https://doi.org/10.1177/0748175612440286>

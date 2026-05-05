@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^\.github$
+^LICENSE\.md$
+^doc$
+^Meta$
+^data-raw$
+^\.positai$
+^\.claude$
