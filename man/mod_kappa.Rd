@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_kappa.R
 \name{mod_kappa}
 \alias{mod_kappa}
-\title{Modified kappa (κ*) — I-CVI adjusted for chance agreement}
+\title{Modified kappa - I-CVI adjusted for chance agreement}
 \usage{
 mod_kappa(ratings, relevant_threshold = 3, na.rm = FALSE)
 }
@@ -18,11 +18,11 @@ Defaults to 3.}
 counting experts and agreements. Defaults to \code{FALSE}.}
 }
 \value{
-A named numeric vector of κ* values, one per item. If \code{ratings}
+A named numeric vector of modified-kappa values, one per item. If \code{ratings}
 is a vector, returns a single numeric value.
 }
 \description{
-Computes modified kappa (κ*) for each item, as proposed by Polit, Beck,
+Computes modified kappa for each item, as proposed by Polit, Beck,
 and Owen (2007). Modified kappa adjusts the Item-level Content Validity
 Index (I-CVI) for chance agreement under the assumption that each expert
 independently rates an item as relevant with probability 0.5.
@@ -42,10 +42,10 @@ relevant.
 Common interpretation cutoffs (Cicchetti and Sparrow, 1981; adopted by
 Polit et al., 2007):
 \itemize{
-\item κ* < 0.40: poor
-\item κ* 0.40-0.59: fair
-\item κ* 0.60-0.74: good
-\item κ* > 0.74: excellent
+\item kappa* < 0.40: poor
+\item kappa* 0.40-0.59: fair
+\item kappa* 0.60-0.74: good
+\item kappa* > 0.74: excellent
 }
 }
 \examples{

@@ -35,10 +35,10 @@ apa_table <- function(x, ...) {
 #' Item-level interpretation labels follow the modified-kappa cutoffs of
 #' Cicchetti and Sparrow (1981), as adopted by Polit, Beck, and Owen (2007):
 #'
-#' - Excellent: κ* > 0.74
-#' - Good: κ* 0.60 to 0.74
-#' - Fair: κ* 0.40 to 0.59
-#' - Poor: κ* < 0.40
+#' - Excellent: kappa* > 0.74
+#' - Good: kappa* 0.60 to 0.74
+#' - Fair: kappa* 0.40 to 0.59
+#' - Poor: kappa* < 0.40
 #'
 #' Scale-level indices are reported in the caption rather than the table
 #' body, matching the typical layout used in nursing, education, and

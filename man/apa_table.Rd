@@ -51,10 +51,10 @@ rendering to markdown, HTML, or LaTeX via \code{\link[knitr:kable]{knitr::kable(
 Item-level interpretation labels follow the modified-kappa cutoffs of
 Cicchetti and Sparrow (1981), as adopted by Polit, Beck, and Owen (2007):
 \itemize{
-\item Excellent: κ* > 0.74
-\item Good: κ* 0.60 to 0.74
-\item Fair: κ* 0.40 to 0.59
-\item Poor: κ* < 0.40
+\item Excellent: kappa* > 0.74
+\item Good: kappa* 0.60 to 0.74
+\item Fair: kappa* 0.40 to 0.59
+\item Poor: kappa* < 0.40
 }
 
 Scale-level indices are reported in the caption rather than the table

@@ -1,6 +1,6 @@
-#' Modified kappa (κ*) — I-CVI adjusted for chance agreement
+#' Modified kappa - I-CVI adjusted for chance agreement
 #'
-#' Computes modified kappa (κ*) for each item, as proposed by Polit, Beck,
+#' Computes modified kappa for each item, as proposed by Polit, Beck,
 #' and Owen (2007). Modified kappa adjusts the Item-level Content Validity
 #' Index (I-CVI) for chance agreement under the assumption that each expert
 #' independently rates an item as relevant with probability 0.5.
@@ -13,7 +13,7 @@
 #' @param na.rm Logical. If `TRUE`, missing ratings are excluded when
 #'   counting experts and agreements. Defaults to `FALSE`.
 #'
-#' @return A named numeric vector of κ* values, one per item. If `ratings`
+#' @return A named numeric vector of modified-kappa values, one per item. If `ratings`
 #'   is a vector, returns a single numeric value.
 #'
 #' @details
@@ -31,10 +31,10 @@
 #' Common interpretation cutoffs (Cicchetti and Sparrow, 1981; adopted by
 #' Polit et al., 2007):
 #'
-#' - κ* < 0.40: poor
-#' - κ* 0.40-0.59: fair
-#' - κ* 0.60-0.74: good
-#' - κ* > 0.74: excellent
+#' - kappa* < 0.40: poor
+#' - kappa* 0.40-0.59: fair
+#' - kappa* 0.60-0.74: good
+#' - kappa* > 0.74: excellent
 #'
 #' @references
 #' Cicchetti, D. V., & Sparrow, S. A. (1981). Developing criteria for
