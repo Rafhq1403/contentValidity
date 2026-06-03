@@ -36,7 +36,7 @@ panels. The exact binomial computation used here is their recommended
 replacement.
 }
 \examples{
-cvr_critical(10)         # 0.80 — need 9 of 10 experts to call it essential
+cvr_critical(10)         # 0.80 -- need 9 of 10 experts to call it essential
 cvr_critical(20)         # 0.50
 cvr_critical(40)         # 0.25
 cvr_critical(10, alpha = 0.01)

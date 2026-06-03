@@ -24,9 +24,17 @@ apa_table <- function(x, ...) {
 #'   `"data.frame"` require the `knitr` package.
 #' @param digits Integer. Number of decimal places for numeric values.
 #'   Default 2 (APA convention for proportions and correlations).
-#' @param interpretation Logical. Whether to include an Interpretation
-#'   column based on modified-kappa cutoffs (Cicchetti & Sparrow, 1981).
-#'   Default `TRUE`.
+#' @param interpretation Logical. Whether to include an interpretation
+#'   column. Default `TRUE`. The cutoffs depend on
+#'   `interpretation_index`.
+#' @param interpretation_index Character. Which index drives the
+#'   interpretation column. One of `"mod_kappa"` (default;
+#'   Cicchetti & Sparrow, 1981; Polit, Beck, & Owen, 2007),
+#'   `"gwet_ac1"` (Altman, 1991), `"gwet_ac2"` (Altman, 1991), or
+#'   `"icvi"` (Polit & Beck, 2006). The resulting column is named
+#'   accordingly (e.g., "Kappa Interpretation",
+#'   "AC1 Interpretation") so that the labels are not confused
+#'   with the other columns in the table.
 #' @param caption Optional character string. The caption to use when format
 #'   is not `"data.frame"`. If `NULL` (default), a standard caption is
 #'   generated that reports the scale-level indices.
@@ -73,23 +81,40 @@ apa_table.content_validity <- function(x,
                                                    "html", "latex", "pipe"),
                                         digits = 2,
                                         interpretation = TRUE,
+                                        interpretation_index = c("mod_kappa",
+                                                                  "gwet_ac1",
+                                                                  "gwet_ac2",
+                                                                  "icvi"),
                                         caption = NULL,
                                         ...) {
 
   format <- match.arg(format)
+  interpretation_index <- match.arg(interpretation_index)
 
-  classify <- function(k) {
-    if (is.na(k)) {
-      "-"
-    } else if (k > 0.74) {
-      "Excellent"
-    } else if (k >= 0.60) {
-      "Good"
-    } else if (k >= 0.40) {
-      "Fair"
-    } else {
-      "Poor"
-    }
+  # Kappa and AC cutoffs follow Cicchetti & Sparrow (1981) /
+  # Altman (1991); I-CVI cutoffs follow Polit & Beck (2006).
+  classify_kappa <- function(k) {
+    if (is.na(k))       "-"
+    else if (k > 0.74)  "Excellent"
+    else if (k >= 0.60) "Good"
+    else if (k >= 0.40) "Fair"
+    else                "Poor"
+  }
+
+  classify_ac <- function(a) {
+    if (is.na(a))       "-"
+    else if (a > 0.80)  "Very good"
+    else if (a >= 0.60) "Good"
+    else if (a >= 0.40) "Moderate"
+    else if (a >= 0.20) "Fair"
+    else                "Poor"
+  }
+
+  classify_icvi <- function(p) {
+    if (is.na(p))       "-"
+    else if (p >= 0.78) "Excellent"
+    else if (p >= 0.70) "Acceptable"
+    else                "Revise/discard"
   }
 
   df <- data.frame(
@@ -101,8 +126,73 @@ apa_table.content_validity <- function(x,
     stringsAsFactors     = FALSE
   )
 
+  # AC1 and AC2 columns were added in v0.2.0. They are only included in
+  # the table if the underlying content_validity object carries them
+  # (i.e. v0.2.0 wrapper output), preserving compatibility with any
+  # downstream code that constructed content_validity objects manually
+  # under v0.1.0.
+  if (!is.null(x$items$gwet_ac1)) {
+    df$`Gwet's AC1` <- round(x$items$gwet_ac1, digits)
+  }
+  if (!is.null(x$items$gwet_ac2)) {
+    df$`Gwet's AC2` <- round(x$items$gwet_ac2, digits)
+  }
+
   if (interpretation) {
-    df$Interpretation <- vapply(x$items$mod_kappa, classify, character(1))
+    # Pick the right classifier, column header, and source-column
+    # display name for the requested interpretation index. Fall back
+    # gracefully if the requested column is missing (e.g. v0.1.0
+    # content_validity objects with no AC1/AC2).
+    classifier <- switch(
+      interpretation_index,
+      mod_kappa = classify_kappa,
+      gwet_ac1  = classify_ac,
+      gwet_ac2  = classify_ac,
+      icvi      = classify_icvi
+    )
+    column_name <- switch(
+      interpretation_index,
+      mod_kappa = "Kappa Interpretation",
+      gwet_ac1  = "AC1 Interpretation",
+      gwet_ac2  = "AC2 Interpretation",
+      icvi      = "I-CVI Interpretation"
+    )
+    source_display <- switch(
+      interpretation_index,
+      mod_kappa = "Modified Kappa",
+      gwet_ac1  = "Gwet's AC1",
+      gwet_ac2  = "Gwet's AC2",
+      icvi      = "I-CVI"
+    )
+    source_values <- x$items[[interpretation_index]]
+    if (is.null(source_values)) {
+      stop("Interpretation requested for `", interpretation_index,
+           "` but the content_validity object does not carry that ",
+           "column. Either supply a v0.2.0 content_validity object or ",
+           "choose a different `interpretation_index`.", call. = FALSE)
+    }
+    interp_values <- vapply(source_values, classifier, character(1))
+
+    # Insert the interpretation column immediately after its source
+    # index column, not at the end of the table. This avoids the
+    # misleading layout where a generic "Interpretation" column sat
+    # next to an unrelated numeric column.
+    source_idx <- match(source_display, names(df))
+    if (is.na(source_idx)) {
+      # Shouldn't happen for v0.2.0 objects, but fall back to appending
+      df[[column_name]] <- interp_values
+    } else {
+      interp_df <- stats::setNames(
+        data.frame(interp_values, stringsAsFactors = FALSE),
+        column_name
+      )
+      df <- cbind(
+        df[, seq_len(source_idx), drop = FALSE],
+        interp_df,
+        df[, -seq_len(source_idx), drop = FALSE],
+        stringsAsFactors = FALSE
+      )
+    }
   }
 
   if (format == "data.frame") {
@@ -126,13 +216,19 @@ apa_table.content_validity <- function(x,
 
   kable_format <- if (format == "markdown") "pipe" else format
 
+  # Build a column-type-aware alignment spec: left-align character
+  # columns (Item, Interpretation), right-align numeric columns
+  # (proportions and coefficients).
+  align_spec <- vapply(df, function(col) {
+    if (is.numeric(col)) "r" else "l"
+  }, character(1))
+
   knitr::kable(
     df,
     format  = kable_format,
     caption = caption,
     digits  = digits,
-    align   = c("l", rep("r", ncol(df) - 1L - as.integer(interpretation)),
-                if (interpretation) "l" else NULL),
+    align   = unname(align_spec),
     ...
   )
 }

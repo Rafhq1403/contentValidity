@@ -1,7 +1,7 @@
 Package: contentValidity
 Type: Package
 Title: Content Validity Indices for Instrument Development
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person("Rashed", "Alqahtani",
            email = "rashed.alqahtani@gmail.com",
@@ -26,6 +26,10 @@ Config/testthat/edition: 3
 URL: https://github.com/Rafhq1403/contentValidity
 BugReports: https://github.com/Rafhq1403/contentValidity/issues
 Config/roxygen2/version: 8.0.0
-Depends: 
+Depends:
     R (>= 3.5)
+Imports:
+    stats,
+    graphics,
+    grDevices
 LazyData: true

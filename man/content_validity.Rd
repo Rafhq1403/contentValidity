@@ -9,6 +9,9 @@ content_validity(
   relevant_threshold = 3,
   lo = 1,
   hi = 4,
+  categories = NULL,
+  ac2_weights = "quadratic",
+  subscale = NULL,
   na.rm = FALSE
 )
 }
@@ -17,11 +20,26 @@ content_validity(
 experts, columns = items) on a relevance scale.}
 
 \item{relevant_threshold}{Integer. Minimum rating considered "relevant".
-Passed to \code{\link[=icvi]{icvi()}}, \code{\link[=scvi_ave]{scvi_ave()}}, \code{\link[=scvi_ua]{scvi_ua()}}, and \code{\link[=mod_kappa]{mod_kappa()}}.
-Defaults to 3.}
+Passed to \code{\link[=icvi]{icvi()}}, \code{\link[=scvi_ave]{scvi_ave()}}, \code{\link[=scvi_ua]{scvi_ua()}}, \code{\link[=mod_kappa]{mod_kappa()}}, and
+\code{\link[=gwet_ac1]{gwet_ac1()}}. Defaults to 3.}
 
 \item{lo, hi}{Numeric. Minimum and maximum possible rating values on the
 scale; passed to \code{\link[=aiken_v]{aiken_v()}}. Defaults to 1 and 4.}
+
+\item{categories}{Numeric vector of all possible rating values, used by
+\code{\link[=gwet_ac2]{gwet_ac2()}}. Defaults to \code{seq(lo, hi)}, which is correct for the
+typical 4-point relevance scale.}
+
+\item{ac2_weights}{Weighting scheme passed to \code{\link[=gwet_ac2]{gwet_ac2()}}. One of
+\code{"quadratic"} (default), \code{"linear"}, \code{"identity"}, or a custom
+square matrix.}
+
+\item{subscale}{Optional character or factor vector of length
+\code{ncol(ratings)} assigning each item to a subscale (factor / domain).
+When supplied, the scale-level indices are computed both overall
+and per-subscale, and the result carries a \verb{$subscales} data frame.
+Useful for multi-dimensional instruments where different items
+measure different constructs. Defaults to \code{NULL} (overall only).}
 
 \item{na.rm}{Logical. Passed to all underlying functions. Defaults to
 \code{FALSE}.}
@@ -30,9 +48,9 @@ scale; passed to \code{\link[=aiken_v]{aiken_v()}}. Defaults to 1 and 4.}
 An object of class \code{"content_validity"}: a list containing
 \itemize{
 \item \code{items}: a data frame with one row per item and columns \code{item},
-\code{icvi}, \code{mod_kappa}, and \code{aiken_v}.
-\item \code{scale}: a named numeric vector with \code{scvi_ave}, \code{scvi_ua}, and
-\code{mean_kappa}.
+\code{icvi}, \code{mod_kappa}, \code{aiken_v}, \code{gwet_ac1}, \code{gwet_ac2}.
+\item \code{scale}: a named numeric vector with \code{scvi_ave}, \code{scvi_ua},
+\code{mean_kappa}, \code{mean_ac1}, \code{mean_ac2}.
 \item \code{n_experts}: integer, number of experts (rows).
 \item \code{n_items}: integer, number of items (columns).
 }
@@ -40,13 +58,15 @@ An object of class \code{"content_validity"}: a list containing
 \description{
 Runs the standard relevance-scale content validity indices on a single
 ratings matrix and returns a tidy summary. Computes Item-level CVI,
-modified kappa, and Aiken's V at the item level, and S-CVI/Ave, S-CVI/UA,
-and the mean modified kappa at the scale level.
+modified kappa, Aiken's V, Gwet's AC1, and Gwet's AC2 at the item
+level; S-CVI/Ave, S-CVI/UA, mean modified kappa, mean AC1, and mean
+AC2 at the scale level. New AC1 and AC2 columns added in v0.2.0.
 }
 \details{
-Lawshe's CVR is not included in this wrapper because it uses a different
-rating convention (essential / useful but not essential / not necessary).
-For CVR analyses, use \code{\link[=cvr]{cvr()}} and \code{\link[=cvr_critical]{cvr_critical()}} directly.
+Lawshe's CVR is not included in this wrapper because it uses a
+different rating convention (essential / useful but not essential /
+not necessary). For CVR analyses, use \code{\link[=cvr]{cvr()}} and \code{\link[=cvr_critical]{cvr_critical()}}
+directly.
 }
 \examples{
 ratings <- matrix(
@@ -65,5 +85,5 @@ result$scale
 }
 \seealso{
 \code{\link[=icvi]{icvi()}}, \code{\link[=scvi_ave]{scvi_ave()}}, \code{\link[=scvi_ua]{scvi_ua()}}, \code{\link[=mod_kappa]{mod_kappa()}},
-\code{\link[=aiken_v]{aiken_v()}}, \code{\link[=cvr]{cvr()}}
+\code{\link[=aiken_v]{aiken_v()}}, \code{\link[=gwet_ac1]{gwet_ac1()}}, \code{\link[=gwet_ac2]{gwet_ac2()}}, \code{\link[=cvr]{cvr()}}
 }

@@ -88,3 +88,55 @@ test_that("cvr_critical rejects bad input", {
   expect_error(cvr_critical(10, alpha = 1), "between 0 and 1")
   expect_error(cvr_critical(10, alpha = "bad"), "between 0 and 1")
 })
+
+
+# ---------------------------------------------------------------------
+# v0.2.0: bootstrap confidence intervals
+# ---------------------------------------------------------------------
+
+test_that("cvr(ci = FALSE) preserves v0.1.0 return type", {
+  ratings <- matrix(c(1, 1, 2, 1, 3, 2, 1, 3, 1, 2), nrow = 5,
+                    dimnames = list(NULL, c("item1", "item2")))
+  old_style <- cvr(ratings)
+  expect_type(old_style, "double")
+  expect_length(old_style, 2)
+})
+
+test_that("cvr(ci = TRUE) returns a data frame with the documented columns", {
+  ratings <- matrix(c(1, 1, 2, 1, 3, 2, 1, 3, 1, 2), nrow = 5,
+                    dimnames = list(NULL, c("item1", "item2")))
+  result <- cvr(ratings, ci = TRUE, n_boot = 200, seed = 1)
+  expect_s3_class(result, "data.frame")
+  expect_named(result,
+               c("item", "cvr", "ci_lower", "ci_upper",
+                 "ci_method", "conf_level", "n_boot"))
+  expect_equal(nrow(result), 2)
+})
+
+test_that("cvr bootstrap point estimate matches non-CI version", {
+  ratings <- matrix(c(1, 1, 2, 1, 3, 2, 1, 3, 1, 2, 1, 2, 1, 3, 2),
+                    nrow = 5,
+                    dimnames = list(NULL, paste0("item", 1:3)))
+  pe <- cvr(ratings)
+  with_ci <- cvr(ratings, ci = TRUE, n_boot = 500, seed = 1)
+  expect_equal(with_ci$cvr, unname(pe))
+})
+
+test_that("cvr bootstrap CI brackets the point estimate and is in [-1, 1]", {
+  ratings <- matrix(c(1, 1, 2, 1, 3, 2, 1, 3, 1, 2, 1, 2, 1, 3, 2),
+                    nrow = 5,
+                    dimnames = list(NULL, paste0("item", 1:3)))
+  result <- cvr(ratings, ci = TRUE, n_boot = 500, seed = 42)
+  expect_true(all(result$ci_lower <= result$cvr))
+  expect_true(all(result$ci_upper >= result$cvr))
+  # CVR is bounded in [-1, 1]
+  expect_true(all(result$ci_lower >= -1))
+  expect_true(all(result$ci_upper <= 1))
+})
+
+test_that("cvr bootstrap argument validation", {
+  ratings <- matrix(c(1, 1, 2, 1, 3), nrow = 5)
+  expect_error(cvr(ratings, ci = TRUE, n_boot = 50),
+               "n_boot.*100")
+  expect_error(cvr(ratings, ci = "yes"), "TRUE or FALSE")
+})

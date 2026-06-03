@@ -4,7 +4,17 @@
 \alias{aiken_v}
 \title{Aiken's V coefficient of content validity}
 \usage{
-aiken_v(ratings, lo = 1, hi = 4, na.rm = FALSE)
+aiken_v(
+  ratings,
+  lo = 1,
+  hi = 4,
+  na.rm = FALSE,
+  ci = FALSE,
+  n_boot = 2000,
+  ci_method = c("percentile", "bca"),
+  conf_level = 0.95,
+  seed = NULL
+)
 }
 \arguments{
 \item{ratings}{A numeric matrix or data frame of expert ratings (rows =
@@ -17,10 +27,31 @@ as a single item.}
 
 \item{na.rm}{Logical. If \code{TRUE}, missing ratings are excluded.
 Defaults to \code{FALSE}.}
+
+\item{ci}{Logical. If \code{TRUE}, returns a data frame with bootstrap
+confidence intervals alongside the point estimate. Defaults to \code{FALSE}
+(returns a numeric vector, identical to the package's pre-0.2.0
+behaviour).}
+
+\item{n_boot}{Integer. Number of bootstrap replicates when \code{ci = TRUE}.
+Defaults to 2000 (Davison & Hinkley, 1997; Hesterberg, 2015).}
+
+\item{ci_method}{Character. One of \code{"percentile"} (default; Efron &
+Tibshirani, 1993) or \code{"bca"} (bias-corrected and accelerated;
+DiCiccio & Efron, 1996).}
+
+\item{conf_level}{Numeric. Confidence level between 0 and 1. Defaults to
+0.95.}
+
+\item{seed}{Integer or \code{NULL}. If supplied, passed to \code{\link[=set.seed]{set.seed()}} for
+reproducible bootstrap samples. Defaults to \code{NULL}.}
 }
 \value{
-A named numeric vector of V values, one per item. If \code{ratings}
-is a vector, returns a single numeric value.
+When \code{ci = FALSE} (default), a named numeric vector of V values,
+one per item (or a single numeric value if \code{ratings} is a vector).
+When \code{ci = TRUE}, a data frame with one row per item and columns
+\code{item}, \code{aiken_v}, \code{ci_lower}, \code{ci_upper}, \code{ci_method}, \code{conf_level},
+\code{n_boot}.
 }
 \description{
 Computes Aiken's V (Aiken, 1985), an index of content validity that uses
@@ -29,6 +60,10 @@ Aiken's V ranges from 0 to 1, where 1 indicates all experts gave the
 maximum rating and 0 indicates all gave the minimum.
 }
 \details{
+Optional bootstrap confidence intervals are available via \code{ci = TRUE}.
+Resampling is performed at the expert (row) level, matching the standard
+inferential frame for inter-rater reliability analyses (Gwet, 2014).
+
 Aiken's V is calculated as:
 
 \deqn{V = (\bar{X} - lo) / (hi - lo)}
@@ -56,11 +91,30 @@ aiken_v(ratings)
 # 5-point scale
 aiken_v(c(5, 4, 5, 5, 4), lo = 1, hi = 5)
 
+# With bootstrap confidence intervals (new in v0.2.0)
+aiken_v(ratings, ci = TRUE, n_boot = 1000, seed = 1)
+
 }
 \references{
 Aiken, L. R. (1985). Three coefficients for analyzing the reliability and
 validity of ratings. \emph{Educational and Psychological Measurement}, 45(1),
 131-142. \doi{10.1177/0013164485451012}
+
+Davison, A. C., & Hinkley, D. V. (1997). \emph{Bootstrap methods and their
+application}. Cambridge University Press. \doi{10.1017/CBO9780511802843}
+
+DiCiccio, T. J., & Efron, B. (1996). Bootstrap confidence intervals.
+\emph{Statistical Science}, 11(3), 189-228. \doi{10.1214/ss/1032280214}
+
+Efron, B., & Tibshirani, R. J. (1993). \emph{An introduction to the bootstrap}.
+Chapman and Hall. \doi{10.1201/9780429246593}
+
+Gwet, K. L. (2014). \emph{Handbook of inter-rater reliability} (4th ed.).
+Advanced Analytics, LLC.
+
+Hesterberg, T. C. (2015). What teachers should know about the bootstrap:
+Resampling in the undergraduate statistics curriculum. \emph{The American
+Statistician}, 69(4), 371-386. \doi{10.1080/00031305.2015.1089789}
 }
 \seealso{
 \code{\link[=icvi]{icvi()}}

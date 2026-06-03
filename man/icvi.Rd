@@ -4,7 +4,16 @@
 \alias{icvi}
 \title{Item-level Content Validity Index (I-CVI)}
 \usage{
-icvi(ratings, relevant_threshold = 3, na.rm = FALSE)
+icvi(
+  ratings,
+  relevant_threshold = 3,
+  na.rm = FALSE,
+  ci = FALSE,
+  n_boot = 2000,
+  ci_method = c("percentile", "bca"),
+  conf_level = 0.95,
+  seed = NULL
+)
 }
 \arguments{
 \item{ratings}{A numeric matrix or data frame of expert ratings, where rows
@@ -19,10 +28,36 @@ scale).}
 \item{na.rm}{Logical. If \code{TRUE}, missing ratings are excluded from the
 calculation. Defaults to \code{FALSE}, in which case any \code{NA} produces \code{NA}
 for the affected item.}
+
+\item{ci}{Logical. If \code{TRUE}, returns a data frame with bootstrap
+confidence intervals in addition to the point estimate. Defaults to
+\code{FALSE} (returns a numeric vector, identical to the package's pre-0.2.0
+behaviour).}
+
+\item{n_boot}{Integer. Number of bootstrap replicates when \code{ci = TRUE}.
+Defaults to 2000, following Davison and Hinkley (1997, ch. 5), who
+recommend at least 1000 replicates for stable percentile intervals, and
+Hesterberg (2015), who notes that 1000 is sufficient and 10,000 is ideal
+on modern hardware. 2000 balances stability against compute time.}
+
+\item{ci_method}{Character. One of \code{"percentile"} (default) or \code{"bca"}
+(bias-corrected and accelerated). Percentile (Efron & Tibshirani, 1993)
+respects the \verb{[0, 1]} bounds of I-CVI naturally. BCa (DiCiccio & Efron,
+1996) is preferred when the bootstrap distribution is skewed, which is
+common for I-CVI values near 1.0.}
+
+\item{conf_level}{Numeric. Confidence level between 0 and 1. Defaults to
+0.95.}
+
+\item{seed}{Integer or \code{NULL}. If supplied, passed to \code{\link[=set.seed]{set.seed()}} for
+reproducible bootstrap samples. Defaults to \code{NULL}.}
 }
 \value{
-A named numeric vector of I-CVI values, one per item. If \code{ratings}
-is a vector, returns a single numeric value.
+When \code{ci = FALSE} (default), a named numeric vector of I-CVI
+values, one per item (or a single numeric value if \code{ratings} is a
+vector). When \code{ci = TRUE}, a data frame with one row per item and
+columns \code{item}, \code{icvi}, \code{ci_lower}, \code{ci_upper}, \code{ci_method},
+\code{conf_level}, \code{n_boot}.
 }
 \description{
 Computes the Item-level Content Validity Index (I-CVI) for one or more items
@@ -32,6 +67,13 @@ rate an item as 3 (relevant) or 4 (highly relevant) on a 4-point relevance
 scale.
 }
 \details{
+Optional bootstrap confidence intervals are available via \code{ci = TRUE}. When
+requested, the function resamples experts (rows) with replacement and
+recomputes I-CVI on each replicate. Resampling experts (rather than items)
+matches the standard inferential frame for inter-rater reliability
+analyses: experts are the random sample from a population of potential
+raters, while items are fixed by the study design (Gwet, 2014).
+
 Common interpretation guidelines (Polit & Beck, 2006):
 \itemize{
 \item I-CVI >= 0.78: excellent content validity (with 6 or more experts).
@@ -60,6 +102,13 @@ icvi(c(4, 4, 3, 3, 4))
 # Stricter threshold (only highest rating counts as relevant)
 icvi(ratings, relevant_threshold = 4)
 
+# With bootstrap confidence intervals (new in v0.2.0)
+set.seed(1)
+icvi(ratings, ci = TRUE, n_boot = 1000)
+
+# BCa intervals, recommended when I-CVI values cluster near 1.0
+icvi(ratings, ci = TRUE, ci_method = "bca", n_boot = 1000, seed = 1)
+
 }
 \references{
 Lynn, M. R. (1986). Determination and quantification of content validity.
@@ -70,4 +119,20 @@ Polit, D. F., & Beck, C. T. (2006). The content validity index: Are you
 sure you know what's being reported? Critique and recommendations.
 \emph{Research in Nursing & Health}, 29(5), 489-497.
 \doi{10.1002/nur.20147}
+
+Davison, A. C., & Hinkley, D. V. (1997). \emph{Bootstrap methods and their
+application}. Cambridge University Press. \doi{10.1017/CBO9780511802843}
+
+DiCiccio, T. J., & Efron, B. (1996). Bootstrap confidence intervals.
+\emph{Statistical Science}, 11(3), 189-228. \doi{10.1214/ss/1032280214}
+
+Efron, B., & Tibshirani, R. J. (1993). \emph{An introduction to the bootstrap}.
+Chapman and Hall. \doi{10.1201/9780429246593}
+
+Gwet, K. L. (2014). \emph{Handbook of inter-rater reliability} (4th ed.).
+Advanced Analytics, LLC.
+
+Hesterberg, T. C. (2015). What teachers should know about the bootstrap:
+Resampling in the undergraduate statistics curriculum. \emph{The American
+Statistician}, 69(4), 371-386. \doi{10.1080/00031305.2015.1089789}
 }

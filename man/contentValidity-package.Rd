@@ -8,20 +8,58 @@
 \description{
 The \code{contentValidity} package provides functions for computing content
 validity indices used in questionnaire and instrument development,
-including the Item-level and Scale-level Content Validity Indices,
-modified kappa, Aiken's V, and Lawshe's CVR with corrected critical
-values.
+along with bootstrap confidence intervals, sample-size planning, and
+publication-ready reporting tools. Methods follow Lynn (1986), Polit
+and Beck (2006), Polit, Beck, and Owen (2007), Aiken (1985), Lawshe
+(1975) with the corrected critical values of Wilson, Pan, and
+Schumsky (2012), and Gwet (2008, 2014).
 }
-\section{Main functions}{
+\section{Item-level indices}{
 
 \itemize{
 \item \code{\link[=icvi]{icvi()}}: Item-level Content Validity Index
-\item \code{\link[=scvi_ave]{scvi_ave()}}: Scale-level CVI, average method
-\item \code{\link[=scvi_ua]{scvi_ua()}}: Scale-level CVI, universal agreement method
 \item \code{\link[=mod_kappa]{mod_kappa()}}: Modified kappa adjusted for chance agreement
 \item \code{\link[=aiken_v]{aiken_v()}}: Aiken's V coefficient
-\item \code{\link[=cvr]{cvr()}}: Lawshe's Content Validity Ratio
+\item \code{\link[=gwet_ac1]{gwet_ac1()}}: Gwet's AC1 chance-corrected agreement (binary)
+\item \code{\link[=gwet_ac2]{gwet_ac2()}}: Gwet's AC2 weighted chance-corrected agreement (ordinal)
+}
+}
+
+\section{Scale-level indices}{
+
+\itemize{
+\item \code{\link[=scvi_ave]{scvi_ave()}}: Scale-level CVI, average method
+\item \code{\link[=scvi_ua]{scvi_ua()}}: Scale-level CVI, universal agreement method
+}
+}
+
+\section{Lawshe's Content Validity Ratio}{
+
+\itemize{
+\item \code{\link[=cvr]{cvr()}}: Lawshe's CVR
 \item \code{\link[=cvr_critical]{cvr_critical()}}: Critical CVR values (Wilson, Pan & Schumsky 2012)
+}
+}
+
+\section{Inference and planning}{
+
+\itemize{
+\item All indices above support optional bootstrap confidence intervals via
+\code{ci = TRUE}.
+\item \code{\link[=cv_sample_size_icvi]{cv_sample_size_icvi()}}: minimum number of expert raters for a
+target I-CVI confidence-interval half-width.
+}
+}
+
+\section{Reporting and visualization}{
+
+\itemize{
+\item \code{\link[=content_validity]{content_validity()}}: one-call wrapper returning all indices,
+supporting multi-dimensional / subscale analysis.
+\item \code{\link[=apa_table]{apa_table()}}: publication-ready APA-style tables with per-index
+interpretation.
+\item \code{\link[=plot.content_validity]{plot.content_validity()}}: I-CVI vs. agreement-index scatter with
+configurable flagging logic.
 }
 }
 

@@ -4,7 +4,16 @@
 \alias{scvi_ave}
 \title{Scale-level Content Validity Index, Average method (S-CVI/Ave)}
 \usage{
-scvi_ave(ratings, relevant_threshold = 3, na.rm = FALSE)
+scvi_ave(
+  ratings,
+  relevant_threshold = 3,
+  na.rm = FALSE,
+  ci = FALSE,
+  n_boot = 2000,
+  ci_method = c("percentile", "bca"),
+  conf_level = 0.95,
+  seed = NULL
+)
 }
 \arguments{
 \item{ratings}{A numeric matrix or data frame of expert ratings (rows =
@@ -14,9 +23,30 @@ experts, columns = items) on a relevance scale.}
 Defaults to 3.}
 
 \item{na.rm}{Logical. Passed through to \code{\link[=icvi]{icvi()}}. Defaults to \code{FALSE}.}
+
+\item{ci}{Logical. If \code{TRUE}, returns a data frame with a bootstrap
+confidence interval alongside the point estimate. Defaults to \code{FALSE}
+(returns a single numeric value, identical to the package's pre-0.2.0
+behaviour).}
+
+\item{n_boot}{Integer. Number of bootstrap replicates when \code{ci = TRUE}.
+Defaults to 2000 (Davison & Hinkley, 1997; Hesterberg, 2015).}
+
+\item{ci_method}{Character. One of \code{"percentile"} (default; Efron &
+Tibshirani, 1993) or \code{"bca"} (bias-corrected and accelerated;
+DiCiccio & Efron, 1996).}
+
+\item{conf_level}{Numeric. Confidence level between 0 and 1. Defaults to
+0.95.}
+
+\item{seed}{Integer or \code{NULL}. If supplied, passed to \code{\link[=set.seed]{set.seed()}} for
+reproducible bootstrap samples. Defaults to \code{NULL}.}
 }
 \value{
-A single numeric value: the average I-CVI across items.
+When \code{ci = FALSE} (default), a single numeric value: the average
+I-CVI across items. When \code{ci = TRUE}, a one-row data frame with columns
+\code{item} (set to \code{"scale"}), \code{scvi_ave}, \code{ci_lower}, \code{ci_upper},
+\code{ci_method}, \code{conf_level}, \code{n_boot}.
 }
 \description{
 Computes the Scale-level Content Validity Index using the averaging method,
@@ -24,6 +54,10 @@ defined as the mean of the Item-level Content Validity Indices (I-CVI)
 across all items in the instrument.
 }
 \details{
+Optional bootstrap confidence intervals are available via \code{ci = TRUE}.
+Resampling is performed at the expert (row) level, matching the standard
+inferential frame for inter-rater reliability analyses (Gwet, 2014).
+
 S-CVI/Ave >= 0.90 is generally considered excellent content validity at the
 scale level (Polit & Beck, 2006). Note that S-CVI is undefined for a single
 item; supply a matrix or data frame with two or more item columns.
@@ -38,12 +72,31 @@ ratings <- matrix(
 )
 scvi_ave(ratings)
 
+# With bootstrap confidence interval (new in v0.2.0)
+scvi_ave(ratings, ci = TRUE, n_boot = 1000, seed = 1)
+
 }
 \references{
 Polit, D. F., & Beck, C. T. (2006). The content validity index: Are you
 sure you know what's being reported? Critique and recommendations.
 \emph{Research in Nursing & Health}, 29(5), 489-497.
 \doi{10.1002/nur.20147}
+
+Davison, A. C., & Hinkley, D. V. (1997). \emph{Bootstrap methods and their
+application}. Cambridge University Press. \doi{10.1017/CBO9780511802843}
+
+DiCiccio, T. J., & Efron, B. (1996). Bootstrap confidence intervals.
+\emph{Statistical Science}, 11(3), 189-228. \doi{10.1214/ss/1032280214}
+
+Efron, B., & Tibshirani, R. J. (1993). \emph{An introduction to the bootstrap}.
+Chapman and Hall. \doi{10.1201/9780429246593}
+
+Gwet, K. L. (2014). \emph{Handbook of inter-rater reliability} (4th ed.).
+Advanced Analytics, LLC.
+
+Hesterberg, T. C. (2015). What teachers should know about the bootstrap:
+Resampling in the undergraduate statistics curriculum. \emph{The American
+Statistician}, 69(4), 371-386. \doi{10.1080/00031305.2015.1089789}
 }
 \seealso{
 \code{\link[=icvi]{icvi()}}

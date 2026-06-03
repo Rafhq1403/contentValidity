@@ -159,6 +159,129 @@ cvr_critical(n_experts = 10, alpha = 0.01)
 In this example, only items 1 and 3 (CVR = 0.6 and 1.0) reach the
 critical value of 0.8 at α = 0.05. Item 2 would be revised or dropped.
 
+## What's new in v0.2.0
+
+### Bootstrap confidence intervals
+
+All six relevance-scale indices and Lawshe's CVR now accept an optional
+`ci = TRUE` argument that returns bootstrap confidence intervals
+alongside the point estimate. The CI is the percentile bootstrap by
+default (Efron & Tibshirani, 1993); `ci_method = "bca"` requests the
+bias-corrected accelerated interval (DiCiccio & Efron, 1996), which is
+preferable when the bootstrap distribution is skewed (common for I-CVI
+near 1.0). Default 2000 replicates, configurable via `n_boot`. The
+resampling unit is the expert (row), not the item (column), matching
+the standard inferential frame for inter-rater reliability analyses
+(Gwet, 2014).
+
+```{r}
+icvi(cvi_example, ci = TRUE, n_boot = 1000, seed = 1)
+```
+
+### Gwet's AC1 and AC2
+
+Two new chance-corrected agreement coefficients are available:
+`gwet_ac1()` for binary classification (dichotomized at the relevance
+threshold) and `gwet_ac2()` for the full ordinal scale with a weight
+matrix. Both use Gwet's marginal-adjusted chance-correction, which
+differs from Polit's modified kappa (fixed p = 0.5 null) and gives
+substantively different answers when the prevalence of "relevant"
+ratings is far from 0.5 — the common case in content-validity work.
+
+```{r}
+gwet_ac1(cvi_example)
+gwet_ac2(cvi_example, categories = 1:4)
+```
+
+For AC2, **always pass the full theoretical rating scale** via
+`categories` (e.g., `1:4` for a standard 4-point relevance scale). If
+omitted, the function infers categories from the observed ratings,
+which can silently collapse the weight matrix and give incorrect
+results when extreme categories are unused.
+
+The implementation matches `irrCAC::gwet.ac1.raw()` (by Kilem Gwet,
+the original author of AC1/AC2) bit-for-bit on the same inputs.
+
+### Sample-size planning
+
+`cv_sample_size_icvi()` answers "how many expert raters do I need to
+estimate I-CVI within a given confidence-interval half-width?" — a
+question that has been answered only by rule-of-thumb in the
+content-validity literature (Lynn, 1986; Polit & Beck, 2006).
+
+```{r}
+# Anticipating I-CVI ≈ 0.85 with target half-width ≤ 0.10
+cv_sample_size_icvi(expected = 0.85, half_width = 0.10)
+
+# Sensitivity table across plausible expected I-CVI values
+sapply(seq(0.70, 0.95, by = 0.05), function(p) {
+  cv_sample_size_icvi(expected = p, half_width = 0.10)
+})
+```
+
+A useful caveat: the function typically recommends 20+ experts for
+realistic targets, well above Lynn's rule-of-thumb minimum of 6 — worth
+flagging in study protocols and grant applications.
+
+### Multi-dimensional / subscale analysis
+
+For instruments structured into subscales (e.g., a depression scale
+with cognitive, somatic, and behavioral domains), `content_validity()`
+now accepts a `subscale` argument that maps items to subscales and
+computes scale-level indices per subscale in addition to the overall
+scale.
+
+```{r}
+# Treat items 1-5 as subscale "Cognitive" and 6-10 as "Somatic"
+result_multi <- content_validity(
+  cvi_example,
+  subscale = c(rep("Cognitive", 5), rep("Somatic", 5))
+)
+result_multi$subscales
+```
+
+The items data frame also carries the subscale assignment, which makes
+it easy to filter or facet downstream analyses.
+
+### Visualization
+
+`plot.content_validity()` produces a scatter of I-CVI against an
+agreement index (modified kappa by default; choose `gwet_ac1`,
+`gwet_ac2`, or `aiken_v` via `y_index`). Reference lines mark the
+adequacy region and items outside it are highlighted in red and
+labeled.
+
+```{r, fig.width = 6, fig.height = 4}
+plot(result_multi, y_index = "gwet_ac2")
+```
+
+By default, items are flagged ("Below I-CVI or AC2 threshold") if they
+fail *either* criterion. This is the conservative "needs any review"
+default. When the plot is presenting one index specifically, you may
+prefer to flag only items that fail on that axis:
+
+```{r, fig.width = 6, fig.height = 4}
+# Flag only items below the AC2 threshold (ignores I-CVI verdict)
+plot(result_multi, y_index = "gwet_ac2", flag_logic = "y_index")
+
+# Flag only items below the I-CVI threshold (ignores AC2 verdict)
+plot(result_multi, y_index = "gwet_ac2", flag_logic = "icvi")
+```
+
+The legend always names the criterion that drives the flag, so the
+plot stays unambiguous about why an item is highlighted.
+
+### Per-index interpretation in APA tables
+
+`apa_table()` accepts `interpretation_index` to choose which agreement
+index drives the verdict column ("Excellent" / "Good" / etc.). The
+interpretation column is positioned immediately adjacent to its source
+column to avoid confusion when the table contains multiple indices.
+
+```{r}
+apa_table(result_multi, interpretation_index = "gwet_ac2")
+```
+
 ## Citing the package
 
 If you use `contentValidity` in published research, please run:
@@ -197,3 +320,29 @@ Wilson, F. R., Pan, W., & Schumsky, D. A. (2012). Recalculation of the
 critical values for Lawshe's content validity ratio.
 *Measurement and Evaluation in Counseling and Development*, 45(3),
 197–210. <https://doi.org/10.1177/0748175612440286>
+
+Gwet, K. L. (2008). Computing inter-rater reliability and its variance
+in the presence of high agreement. *British Journal of Mathematical and
+Statistical Psychology*, 61(1), 29–48.
+<https://doi.org/10.1348/000711006X126600>
+
+Gwet, K. L. (2014). *Handbook of inter-rater reliability* (4th ed.).
+Advanced Analytics, LLC.
+
+Wongpakaran, N., Wongpakaran, T., Wedding, D., & Gwet, K. L. (2013). A
+comparison of Cohen's Kappa and Gwet's AC1 when calculating inter-rater
+reliability coefficients. *BMC Medical Research Methodology*, 13(1), 61.
+<https://doi.org/10.1186/1471-2288-13-61>
+
+Efron, B., & Tibshirani, R. J. (1993). *An introduction to the
+bootstrap*. Chapman and Hall.
+
+DiCiccio, T. J., & Efron, B. (1996). Bootstrap confidence intervals.
+*Statistical Science*, 11(3), 189–228.
+<https://doi.org/10.1214/ss/1032280214>
+
+Newcombe, R. G. (1998). Two-sided confidence intervals for the single
+proportion. *Statistics in Medicine*, 17(8), 857–872.
+
+Altman, D. G. (1991). *Practical statistics for medical research*.
+Chapman and Hall.

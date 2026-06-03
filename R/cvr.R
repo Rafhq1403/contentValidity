@@ -41,6 +41,20 @@
 #' Evaluation in Counseling and Development*, 45(3), 197-210.
 #' \doi{10.1177/0748175612440286}
 #'
+#' @param ci Logical. If `TRUE`, returns a data frame with bootstrap
+#'   confidence intervals alongside the point estimate. Defaults to `FALSE`
+#'   (returns a numeric vector, identical to the package's pre-0.2.0
+#'   behaviour).
+#' @param n_boot Integer. Number of bootstrap replicates when `ci = TRUE`.
+#'   Defaults to 2000 (Davison & Hinkley, 1997; Hesterberg, 2015).
+#' @param ci_method Character. One of `"percentile"` (default; Efron &
+#'   Tibshirani, 1993) or `"bca"` (bias-corrected and accelerated;
+#'   DiCiccio & Efron, 1996).
+#' @param conf_level Numeric. Confidence level between 0 and 1. Defaults to
+#'   0.95.
+#' @param seed Integer or `NULL`. If supplied, passed to [set.seed()] for
+#'   reproducible bootstrap samples. Defaults to `NULL`.
+#'
 #' @examples
 #' # 10 experts rating 3 items on Lawshe's 3-point scale
 #' # (1 = essential, 2 = useful, 3 = not necessary)
@@ -56,9 +70,19 @@
 #' # Compare to the critical value for N = 10
 #' cvr_critical(10)
 #'
+#' # With bootstrap confidence intervals
+#' cvr(ratings, ci = TRUE, n_boot = 1000, seed = 1)
+#'
 #' @seealso [cvr_critical()]
 #' @export
-cvr <- function(ratings, essential = 1, na.rm = FALSE) {
+cvr <- function(ratings,
+                essential = 1,
+                na.rm = FALSE,
+                ci = FALSE,
+                n_boot = 2000,
+                ci_method = c("percentile", "bca"),
+                conf_level = 0.95,
+                seed = NULL) {
 
   if (missing(ratings)) {
     stop("`ratings` is required.", call. = FALSE)
@@ -80,21 +104,48 @@ cvr <- function(ratings, essential = 1, na.rm = FALSE) {
     stop("`na.rm` must be TRUE or FALSE.", call. = FALSE)
   }
 
-  one_item <- function(item) {
-    if (na.rm) {
-      item <- item[!is.na(item)]
+  if (!is.logical(ci) || length(ci) != 1) {
+    stop("`ci` must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  ci_method <- match.arg(ci_method)
+
+  # Core point-estimate engine.
+  cvr_engine <- function(x, essential, na.rm) {
+    one_item <- function(item) {
+      if (na.rm) {
+        item <- item[!is.na(item)]
+      }
+      if (anyNA(item) || length(item) == 0) return(NA_real_)
+      N <- length(item)
+      n_e <- sum(item %in% essential)
+      (n_e - N / 2) / (N / 2)
     }
-    if (anyNA(item) || length(item) == 0) return(NA_real_)
-    N <- length(item)
-    n_e <- sum(item %in% essential)
-    (n_e - N / 2) / (N / 2)
+    if (is.null(dim(x))) {
+      return(one_item(x))
+    }
+    apply(x, 2, one_item)
   }
 
-  if (is.null(dim(ratings))) {
-    return(one_item(ratings))
+  # Point estimate only -- preserve v0.1.0 behaviour exactly.
+  if (!ci) {
+    return(cvr_engine(ratings, essential = essential, na.rm = na.rm))
   }
 
-  apply(ratings, 2, one_item)
+  # CI requested.
+  result <- bootstrap_ci(
+    ratings    = ratings,
+    index_fn   = cvr_engine,
+    n_boot     = n_boot,
+    ci_method  = ci_method,
+    conf_level = conf_level,
+    seed       = seed,
+    essential  = essential,
+    na.rm      = na.rm
+  )
+
+  names(result)[names(result) == "estimate"] <- "cvr"
+  result
 }
 
 
@@ -132,7 +183,7 @@ cvr <- function(ratings, essential = 1, na.rm = FALSE) {
 #' \doi{10.1177/0748175612440286}
 #'
 #' @examples
-#' cvr_critical(10)         # 0.80 — need 9 of 10 experts to call it essential
+#' cvr_critical(10)         # 0.80 -- need 9 of 10 experts to call it essential
 #' cvr_critical(20)         # 0.50
 #' cvr_critical(40)         # 0.25
 #' cvr_critical(10, alpha = 0.01)

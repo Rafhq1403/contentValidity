@@ -4,7 +4,16 @@
 \alias{cvr}
 \title{Lawshe's Content Validity Ratio (CVR)}
 \usage{
-cvr(ratings, essential = 1, na.rm = FALSE)
+cvr(
+  ratings,
+  essential = 1,
+  na.rm = FALSE,
+  ci = FALSE,
+  n_boot = 2000,
+  ci_method = c("percentile", "bca"),
+  conf_level = 0.95,
+  seed = NULL
+)
 }
 \arguments{
 \item{ratings}{A numeric matrix or data frame of expert ratings (rows =
@@ -19,6 +28,24 @@ as essential.}
 
 \item{na.rm}{Logical. If \code{TRUE}, missing ratings are excluded when
 counting experts. Defaults to \code{FALSE}.}
+
+\item{ci}{Logical. If \code{TRUE}, returns a data frame with bootstrap
+confidence intervals alongside the point estimate. Defaults to \code{FALSE}
+(returns a numeric vector, identical to the package's pre-0.2.0
+behaviour).}
+
+\item{n_boot}{Integer. Number of bootstrap replicates when \code{ci = TRUE}.
+Defaults to 2000 (Davison & Hinkley, 1997; Hesterberg, 2015).}
+
+\item{ci_method}{Character. One of \code{"percentile"} (default; Efron &
+Tibshirani, 1993) or \code{"bca"} (bias-corrected and accelerated;
+DiCiccio & Efron, 1996).}
+
+\item{conf_level}{Numeric. Confidence level between 0 and 1. Defaults to
+0.95.}
+
+\item{seed}{Integer or \code{NULL}. If supplied, passed to \code{\link[=set.seed]{set.seed()}} for
+reproducible bootstrap samples. Defaults to \code{NULL}.}
 }
 \value{
 A named numeric vector of CVR values per item, ranging from -1
@@ -56,6 +83,9 @@ cvr(ratings)
 
 # Compare to the critical value for N = 10
 cvr_critical(10)
+
+# With bootstrap confidence intervals
+cvr(ratings, ci = TRUE, n_boot = 1000, seed = 1)
 
 }
 \references{

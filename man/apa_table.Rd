@@ -12,6 +12,7 @@ apa_table(x, ...)
   format = c("data.frame", "markdown", "html", "latex", "pipe"),
   digits = 2,
   interpretation = TRUE,
+  interpretation_index = c("mod_kappa", "gwet_ac1", "gwet_ac2", "icvi"),
   caption = NULL,
   ...
 )
@@ -29,9 +30,18 @@ apa_table(x, ...)
 \item{digits}{Integer. Number of decimal places for numeric values.
 Default 2 (APA convention for proportions and correlations).}
 
-\item{interpretation}{Logical. Whether to include an Interpretation
-column based on modified-kappa cutoffs (Cicchetti & Sparrow, 1981).
-Default \code{TRUE}.}
+\item{interpretation}{Logical. Whether to include an interpretation
+column. Default \code{TRUE}. The cutoffs depend on
+\code{interpretation_index}.}
+
+\item{interpretation_index}{Character. Which index drives the
+interpretation column. One of \code{"mod_kappa"} (default;
+Cicchetti & Sparrow, 1981; Polit, Beck, & Owen, 2007),
+\code{"gwet_ac1"} (Altman, 1991), \code{"gwet_ac2"} (Altman, 1991), or
+\code{"icvi"} (Polit & Beck, 2006). The resulting column is named
+accordingly (e.g., "Kappa Interpretation",
+"AC1 Interpretation") so that the labels are not confused
+with the other columns in the table.}
 
 \item{caption}{Optional character string. The caption to use when format
 is not \code{"data.frame"}. If \code{NULL} (default), a standard caption is
