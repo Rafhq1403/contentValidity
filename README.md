@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/Rafhq1403/contentValidity/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Rafhq1403/contentValidity/actions/workflows/R-CMD-check.yaml)
 [![CRAN status](https://www.r-pkg.org/badges/version/contentValidity)](https://CRAN.R-project.org/package=contentValidity)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20533299.svg)](https://doi.org/10.5281/zenodo.20533299)
 <!-- badges: end -->
 
 `contentValidity` provides functions for computing content validity indices
