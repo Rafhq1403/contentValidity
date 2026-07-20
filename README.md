@@ -48,12 +48,27 @@ fields where new measurement instruments must be evaluated by expert panels.
 
 ## Installation
 
-You can install the development version from GitHub with:
+The released version is available from CRAN:
+
+``` r
+install.packages("contentValidity")
+library(contentValidity)
+```
+
+Or install the development version from GitHub:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("Rafhq1403/contentValidity")
 ```
+
+## Source layout
+
+The package source is located in the standard R-package `R/` directory
+rather than a conventional `src/` directory, because `contentValidity`
+is implemented in pure R with no compiled code. Unit tests are in
+`tests/testthat/`, roxygen2 documentation is in `man/`, and the
+getting-started vignette is in `vignettes/`.
 
 ## Quick example
 
